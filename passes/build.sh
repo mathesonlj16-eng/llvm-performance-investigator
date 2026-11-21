@@ -7,4 +7,3 @@ mkdir -p .build/passes
 "$bin/clang++" $(llvm-config-21 --cxxflags) -fPIC -shared passes/PowerOfTwo.cpp \
   $(llvm-config-21 --ldflags --link-shared --libs core passes --system-libs) \
   -o .build/passes/PowerOfTwo.so
-

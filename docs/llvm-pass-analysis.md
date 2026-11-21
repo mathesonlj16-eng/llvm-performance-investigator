@@ -64,4 +64,3 @@ opt-21 -passes='default<O2>' -verify-each -S passes/tests/cases.ll -o -
 ```
 
 On LLVM 21.1.8, both commands emitted `%r = shl i32 %x, 3` in scale32 with the plugin absent. InstCombine alone therefore suffices for this example. This exercise demonstrates matching, legality, SSA replacement, analysis invalidation and verification. The experiment measures IR behavior. It supplies no execution-time comparison or claim about machine instruction cost.
-

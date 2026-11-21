@@ -29,4 +29,3 @@ for pipeline in instcombine 'default<O2>'; do
   sed -n '/^define .*@scale32(/,/^}/p' "$tmp/standard.ll" | grep -F 'shl i32 %x, 3'
 done
 echo 'Passed IR shape, verification, idempotence, boundary values, Clang input and standard pipeline checks.'
-

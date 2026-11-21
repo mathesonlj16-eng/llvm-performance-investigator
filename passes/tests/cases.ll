@@ -104,3 +104,14 @@ define float @floating(float %x) {
   ret float %r
 }
 
+; CHECK-LABEL: define i32 @chain(
+; CHECK-NEXT: %a = shl i32 %x, 2
+; CHECK-NEXT: %b = shl i32 %a, 1
+; CHECK-NEXT: %sum = add i32 %a, %b
+; CHECK-NEXT: ret i32 %sum
+define i32 @chain(i32 %x) {
+  %a = mul i32 %x, 4
+  %b = mul i32 2, %a
+  %sum = add i32 %a, %b
+  ret i32 %sum
+}
