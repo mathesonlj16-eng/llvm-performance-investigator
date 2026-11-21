@@ -5,7 +5,7 @@ A compiler-engineering portfolio project for x86-64 Linux. It follows a C++ loop
 | Investigation | Result |
 |---|---|
 | [Loop vectorization and pointer aliasing](docs/vectorization-investigation.md) | Clang 21 vectorized both loops. Ordinary pointers required a 128-byte runtime distance check. Adding only noalias to the minimal IR removed it. |
-| [Short-call experiment](docs/short-call-analysis.md) | At 32 elements, ordinary calls took 0.23–0.32 ns longer across four launches. A different scalar cleanup path complicates attribution at 31 elements. Includes raw paired timings and linked disassembly. |
+| [Short-call experiment](docs/short-call-analysis.md) | At 32 elements, ordinary calls took 0.23–0.32 ns longer across four launches. A different scalar cleanup path complicates attribution at 31 elements. These hot-buffer WSL2 timings include the whole call and are sensitive to code layout and host scheduling. Raw paired timings and linked disassembly accompany the report. |
 | [LLVM new-pass-manager plugin](docs/llvm-pass-analysis.md) | An out-of-tree function pass rewrites eligible power-of-two integer multiplies. FileCheck, LLVM verification and an execution oracle test legality, SSA replacement and idempotence. |
 | [Release comparison](docs/version-analysis.md) | Under fixed flags and inputs, the largest apparent Clang 20→21 slowdown reversed on repetition. All three measured kernels had matching instruction and label text. |
 
@@ -54,6 +54,6 @@ taskset -c 2 python3 tools/run.py --compiler clang++-20 --candidate clang++-21 -
 python3 tools/compare_asm.py results/reproduction
 ```
 
-## License status
+## License
 
-Project license selection is pending owner approval. The recommended option is Apache-2.0 WITH LLVM-exception to align with upstream LLVM. [LLVM license text](https://llvm.org/LICENSE.txt)
+Apache-2.0 WITH LLVM-exception. [Full license text](LICENSE)
