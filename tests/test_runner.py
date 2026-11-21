@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -27,6 +28,34 @@ class RunnerTests(unittest.TestCase):
 
     def test_outlier(self):
         self.assertEqual(summary([9, 10, 11, 12, 1000]), {"median_ms": 11, "mad_ms": 1})
+
+    def test_reject_same_release(self):
+        result = subprocess.run([sys.executable, "tools/run.py", "--compiler", "clang++",
+                                 "--candidate", "clang++", "--march", "x86-64"],
+                                cwd=ROOT, text=True, capture_output=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("different Clang releases", result.stderr)
+
+    @unittest.skipUnless(shutil.which("clang++-20") and shutil.which("clang++-21"),
+                         "requires packaged Clang 20 and 21")
+    def test_version_report(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp) / "versions"
+            subprocess.run([sys.executable, "tools/run.py", "--compiler", "clang++-20",
+                            "--candidate", "clang++-21", "--march", "x86-64", "--level", "O2",
+                            "--size", "37", "--rounds", "3", "--samples", "4", "--warmups", "0",
+                            "--workload", "dot_product", "--output", dest], cwd=ROOT,
+                           check=True, stdout=subprocess.DEVNULL)
+            report = json.loads((dest / "report.json").read_text())
+            config = report["configurations"]
+            self.assertEqual([c["level"] for c in config.values()], ["O2", "O2"])
+            self.assertNotEqual(config["baseline"]["version"], config["candidate"]["version"])
+            result = report["workloads"]["dot_product"]
+            self.assertEqual(result["order_including_warmups"],
+                             [["baseline", "candidate"], ["candidate", "baseline"]] * 2)
+            for label in config:
+                self.assertTrue((dest / "dot_product" / f"{label}.ll").is_file())
+            self.assertIn("percent_change_candidate_vs_baseline", result)
 
     def test_end_to_end(self):
         with tempfile.TemporaryDirectory() as tmp:
