@@ -25,15 +25,15 @@
   401905:	5d                   	pop    rbp
   401906:	c3                   	ret
   401907:	66 2e 0f 1f 84 00 00 	cs nop WORD PTR [rax+rax*1+0x0]
-  40190e:	00 00 00 
+  40190e:	00 00 00
   401911:	66 2e 0f 1f 84 00 00 	cs nop WORD PTR [rax+rax*1+0x0]
-  401918:	00 00 00 
+  401918:	00 00 00
   40191b:	66 2e 0f 1f 84 00 00 	cs nop WORD PTR [rax+rax*1+0x0]
-  401922:	00 00 00 
+  401922:	00 00 00
   401925:	66 2e 0f 1f 84 00 00 	cs nop WORD PTR [rax+rax*1+0x0]
-  40192c:	00 00 00 
+  40192c:	00 00 00
   40192f:	66 2e 0f 1f 84 00 00 	cs nop WORD PTR [rax+rax*1+0x0]
-  401936:	00 00 00 
+  401936:	00 00 00
   401939:	0f 1f 80 00 00 00 00 	nop    DWORD PTR [rax+0x0]
 
 0000000000401940 <ordinary>:
@@ -54,12 +54,12 @@
   40196e:	31 c0                	xor    eax,eax
   401970:	eb 63                	jmp    4019d5 <ordinary+0x95>
   401972:	c4 e2 7d 58 05 91 06 	vpbroadcastd ymm0,DWORD PTR [rip+0x691]        # 40200c <_IO_stdin_used+0xc>
-  401979:	00 00 
+  401979:	00 00
   40197b:	48 89 d0             	mov    rax,rdx
   40197e:	48 83 e0 e0          	and    rax,0xffffffffffffffe0
   401982:	31 c9                	xor    ecx,ecx
   401984:	66 66 66 2e 0f 1f 84 	data16 data16 cs nop WORD PTR [rax+rax*1+0x0]
-  40198b:	00 00 00 00 00 
+  40198b:	00 00 00 00 00
   401990:	c5 fd fe 0c 8e       	vpaddd ymm1,ymm0,YMMWORD PTR [rsi+rcx*4]
   401995:	c5 fd fe 54 8e 20    	vpaddd ymm2,ymm0,YMMWORD PTR [rsi+rcx*4+0x20]
   40199b:	c5 fd fe 5c 8e 40    	vpaddd ymm3,ymm0,YMMWORD PTR [rsi+rcx*4+0x40]
@@ -80,7 +80,7 @@
   4019db:	48 83 e0 fc          	and    rax,0xfffffffffffffffc
   4019df:	c5 f9 76 c0          	vpcmpeqd xmm0,xmm0,xmm0
   4019e3:	66 66 66 66 2e 0f 1f 	data16 data16 data16 cs nop WORD PTR [rax+rax*1+0x0]
-  4019ea:	84 00 00 00 00 00 
+  4019ea:	84 00 00 00 00 00
   4019f0:	c5 fa 6f 0c 8e       	vmovdqu xmm1,XMMWORD PTR [rsi+rcx*4]
   4019f5:	c5 f1 fa c8          	vpsubd xmm1,xmm1,xmm0
   4019f9:	c5 fa 7f 0c 8f       	vmovdqu XMMWORD PTR [rdi+rcx*4],xmm1
@@ -96,7 +96,7 @@
   401a1d:	74 24                	je     401a43 <ordinary+0x103>
   401a1f:	48 89 c1             	mov    rcx,rax
   401a22:	66 66 66 66 66 2e 0f 	data16 data16 data16 data16 cs nop WORD PTR [rax+rax*1+0x0]
-  401a29:	1f 84 00 00 00 00 00 
+  401a29:	1f 84 00 00 00 00 00
   401a30:	44 8b 0c 8e          	mov    r9d,DWORD PTR [rsi+rcx*4]
   401a34:	41 ff c1             	inc    r9d
   401a37:	44 89 0c 8f          	mov    DWORD PTR [rdi+rcx*4],r9d
@@ -137,8 +137,8 @@
   401aa7:	c5 f8 77             	vzeroupper
   401aaa:	c3                   	ret
   401aab:	66 66 66 66 66 66 2e 	data16 data16 data16 data16 data16 cs nop WORD PTR [rax+rax*1+0x0]
-  401ab2:	0f 1f 84 00 00 00 00 
-  401ab9:	00 
+  401ab2:	0f 1f 84 00 00 00 00
+  401ab9:	00
   401aba:	66 0f 1f 44 00 00    	nop    WORD PTR [rax+rax*1+0x0]
 
 0000000000401ac0 <restricted>:
@@ -153,12 +153,12 @@
   401adc:	31 c0                	xor    eax,eax
   401ade:	eb 61                	jmp    401b41 <restricted+0x81>
   401ae0:	c4 e2 7d 58 05 23 05 	vpbroadcastd ymm0,DWORD PTR [rip+0x523]        # 40200c <_IO_stdin_used+0xc>
-  401ae7:	00 00 
+  401ae7:	00 00
   401ae9:	48 89 d0             	mov    rax,rdx
   401aec:	48 83 e0 e0          	and    rax,0xffffffffffffffe0
   401af0:	31 c9                	xor    ecx,ecx
   401af2:	66 66 66 66 66 2e 0f 	data16 data16 data16 data16 cs nop WORD PTR [rax+rax*1+0x0]
-  401af9:	1f 84 00 00 00 00 00 
+  401af9:	1f 84 00 00 00 00 00
   401b00:	c5 fd fe 0c 8e       	vpaddd ymm1,ymm0,YMMWORD PTR [rsi+rcx*4]
   401b05:	c5 fd fe 54 8e 20    	vpaddd ymm2,ymm0,YMMWORD PTR [rsi+rcx*4+0x20]
   401b0b:	c5 fd fe 5c 8e 40    	vpaddd ymm3,ymm0,YMMWORD PTR [rsi+rcx*4+0x40]

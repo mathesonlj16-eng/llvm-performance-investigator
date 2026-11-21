@@ -25,7 +25,7 @@
   4018f5:	5d                   	pop    rbp
   4018f6:	c3                   	ret
   4018f7:	66 0f 1f 84 00 00 00 	nop    WORD PTR [rax+rax*1+0x0]
-  4018fe:	00 00 
+  4018fe:	00 00
 
 0000000000401900 <ordinary>:
   401900:	48 85 d2             	test   rdx,rdx
@@ -45,12 +45,12 @@
   40192e:	31 c0                	xor    eax,eax
   401930:	eb 63                	jmp    401995 <ordinary+0x95>
   401932:	c4 e2 7d 58 05 d1 06 	vpbroadcastd ymm0,DWORD PTR [rip+0x6d1]        # 40200c <_IO_stdin_used+0xc>
-  401939:	00 00 
+  401939:	00 00
   40193b:	48 89 d0             	mov    rax,rdx
   40193e:	48 83 e0 e0          	and    rax,0xffffffffffffffe0
   401942:	31 c9                	xor    ecx,ecx
   401944:	66 66 66 2e 0f 1f 84 	data16 data16 cs nop WORD PTR [rax+rax*1+0x0]
-  40194b:	00 00 00 00 00 
+  40194b:	00 00 00 00 00
   401950:	c5 fd fe 0c 8e       	vpaddd ymm1,ymm0,YMMWORD PTR [rsi+rcx*4]
   401955:	c5 fd fe 54 8e 20    	vpaddd ymm2,ymm0,YMMWORD PTR [rsi+rcx*4+0x20]
   40195b:	c5 fd fe 5c 8e 40    	vpaddd ymm3,ymm0,YMMWORD PTR [rsi+rcx*4+0x40]
@@ -71,7 +71,7 @@
   40199b:	48 83 e0 fc          	and    rax,0xfffffffffffffffc
   40199f:	c5 f9 76 c0          	vpcmpeqd xmm0,xmm0,xmm0
   4019a3:	66 66 66 66 2e 0f 1f 	data16 data16 data16 cs nop WORD PTR [rax+rax*1+0x0]
-  4019aa:	84 00 00 00 00 00 
+  4019aa:	84 00 00 00 00 00
   4019b0:	c5 fa 6f 0c 8e       	vmovdqu xmm1,XMMWORD PTR [rsi+rcx*4]
   4019b5:	c5 f1 fa c8          	vpsubd xmm1,xmm1,xmm0
   4019b9:	c5 fa 7f 0c 8f       	vmovdqu XMMWORD PTR [rdi+rcx*4],xmm1
@@ -87,7 +87,7 @@
   4019dd:	74 24                	je     401a03 <ordinary+0x103>
   4019df:	48 89 c1             	mov    rcx,rax
   4019e2:	66 66 66 66 66 2e 0f 	data16 data16 data16 data16 cs nop WORD PTR [rax+rax*1+0x0]
-  4019e9:	1f 84 00 00 00 00 00 
+  4019e9:	1f 84 00 00 00 00 00
   4019f0:	44 8b 0c 8e          	mov    r9d,DWORD PTR [rsi+rcx*4]
   4019f4:	41 ff c1             	inc    r9d
   4019f7:	44 89 0c 8f          	mov    DWORD PTR [rdi+rcx*4],r9d
@@ -141,12 +141,12 @@
   401a8c:	31 c0                	xor    eax,eax
   401a8e:	eb 61                	jmp    401af1 <restricted+0x81>
   401a90:	c4 e2 7d 58 05 73 05 	vpbroadcastd ymm0,DWORD PTR [rip+0x573]        # 40200c <_IO_stdin_used+0xc>
-  401a97:	00 00 
+  401a97:	00 00
   401a99:	48 89 d0             	mov    rax,rdx
   401a9c:	48 83 e0 e0          	and    rax,0xffffffffffffffe0
   401aa0:	31 c9                	xor    ecx,ecx
   401aa2:	66 66 66 66 66 2e 0f 	data16 data16 data16 data16 cs nop WORD PTR [rax+rax*1+0x0]
-  401aa9:	1f 84 00 00 00 00 00 
+  401aa9:	1f 84 00 00 00 00 00
   401ab0:	c5 fd fe 0c 8e       	vpaddd ymm1,ymm0,YMMWORD PTR [rsi+rcx*4]
   401ab5:	c5 fd fe 54 8e 20    	vpaddd ymm2,ymm0,YMMWORD PTR [rsi+rcx*4+0x20]
   401abb:	c5 fd fe 5c 8e 40    	vpaddd ymm3,ymm0,YMMWORD PTR [rsi+rcx*4+0x40]
