@@ -1,4 +1,8 @@
-# LLVM Performance Regression Investigator - v0.4
+# LLVM Performance Regression Investigator - v0.5
+
+Clang 21 vectorizes both versions of an unsigned array loop on Zen 3. Ordinary pointers trigger a 128-byte runtime distance check. Restricted pointers give LLVM enough information to omit it. Follow the [vectorization investigation](docs/vectorization-investigation.md) from the source loop to the legality analysis and machine code. Run `bash investigations/aliasing/check.sh` to reproduce the decision and validate overlapping inputs.
+
+## LLVM 21 optimization pass
 
 Build the LLVM 21 new-pass-manager plugin with `bash passes/build.sh` and validate it with `bash passes/test.sh`. The [pass investigation](docs/llvm-pass-analysis.md) covers setup, actual IR, the semantic argument and the stock LLVM comparison.
 
@@ -50,7 +54,7 @@ The two integer workloads share a driver. It alternates between two overlapping 
 
 Each trial launches a fresh process, prepares data and exercises the kernel before timing repeated calls with a monotonic clock. Warm-up trial pairs are discarded. Measured pairs alternate which executable runs first. Seven samples leave one extra first position for O2. The JSON retains order, timings, checksum and maximum errors. Equal checksums across levels supplement the per-executable reference checks.
 
-The reported change is 100 Ã— (O3 median / O2 median âˆ’ 1). MAD measures within-session spread. It is the median distance from the sample median, in milliseconds. It provides no confidence interval. Compare independently repeated sessions before interpreting a difference. The default repeats the same arrays, so cache reuse matters. Input generation, allocation, reference computation and process startup are outside the timer.
+The reported change is 100 Ãƒâ€” (O3 median / O2 median Ã¢Ë†â€™ 1). MAD measures within-session spread. It is the median distance from the sample median, in milliseconds. It provides no confidence interval. Compare independently repeated sessions before interpreting a difference. The default repeats the same arrays, so cache reuse matters. Input generation, allocation, reference computation and process startup are outside the timer.
 
 Native targeting specializes code for the CPU features exposed by the guest. WSL2 scheduling, migration, host activity, frequency changes and thermal conditions remain uncontrolled. These experiments collect elapsed time only. Branch misses, bandwidth and execution-port bottlenecks would require additional evidence. Keep the host and workload fixed for comparisons.
 
