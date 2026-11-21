@@ -1,64 +1,59 @@
-# LLVM Performance Regression Investigator - v0.5
+# LLVM Performance Investigator
 
-Clang 21 vectorizes both versions of an unsigned array loop on Zen 3. Ordinary pointers trigger a 128-byte runtime distance check. Restricted pointers give LLVM enough information to omit it. Follow the [vectorization investigation](docs/vectorization-investigation.md) from the source loop to the legality analysis and machine code. Run `bash investigations/aliasing/check.sh` to reproduce the decision and validate overlapping inputs.
+A compiler-engineering portfolio project for x86-64 Linux. It follows a C++ loop from aliasing rules through LLVM legality analysis to Zen 3 machine code, measures the resulting short-call behavior, and implements a small verified LLVM optimization pass.
 
-## LLVM 21 optimization pass
+| Investigation | Result |
+|---|---|
+| [Loop vectorization and pointer aliasing](docs/vectorization-investigation.md) | Clang 21 vectorized both loops. Ordinary pointers required a 128-byte runtime distance check. Adding only noalias to the minimal IR removed it. |
+| [Short-call experiment](docs/short-call-analysis.md) | At 32 elements, ordinary calls took 0.23–0.32 ns longer across four launches. A different scalar cleanup path complicates attribution at 31 elements. Includes raw paired timings and linked disassembly. |
+| [LLVM new-pass-manager plugin](docs/llvm-pass-analysis.md) | An out-of-tree function pass rewrites eligible power-of-two integer multiplies. FileCheck, LLVM verification and an execution oracle test legality, SSA replacement and idempotence. |
+| [Release comparison](docs/version-analysis.md) | Under fixed flags and inputs, the largest apparent Clang 20→21 slowdown reversed on repetition. All three measured kernels had matching instruction and label text. |
 
-Build the LLVM 21 new-pass-manager plugin with `bash passes/build.sh` and validate it with `bash passes/test.sh`. The [pass investigation](docs/llvm-pass-analysis.md) covers setup, actual IR, the semantic argument and the stock LLVM comparison.
+## Reproduce
 
-## Earlier release investigation
-
-Compare two packaged Clang releases at one optimization level on three validated C++20 kernels. Start with the [Clang 20 versus 21 investigation](docs/version-analysis.md).
-
-## Reproduce the release comparison
-
-On x86-64 Ubuntu with the versioned packages available, install the two drivers alongside one another. The recorded experiment ran on a Ryzen 7 5800HS with WSL2 logical CPU 2 available.
+The recorded environment was Ubuntu under WSL2 on an AMD Ryzen 7 5800HS with packaged LLVM 21.1.8. Use an x86-64 system supporting the Zen 3 instructions for native execution. These commands assume Ubuntu repositories containing the named packages. The plugin build uses the matching LLVM 21 headers, libraries and tools; Clang 20 is for the earlier release comparison.
 
 ```sh
-sudo apt install --no-install-recommends clang-20 clang-21 g++ python3
+sudo apt update
+sudo apt install --no-install-recommends clang clang-20 clang-21 llvm-21-dev llvm-21-tools g++ binutils util-linux python3 git
+python3 -m unittest discover -s tests -v
+bash passes/test.sh
+bash investigations/aliasing/check.sh
+```
+
+Run from the repository root. The pass test builds the plugin. To see the rewrite directly:
+
+```sh
+opt-21 -load-pass-plugin=.build/passes/PowerOfTwo.so -passes=power-of-two -verify-each -S passes/tests/cases.ll -o -
+```
+
+To repeat the short-call experiment, choose a permitted guest CPU (the recorded runs used CPU 2) and a new results directory. To inspect the recorded data on another machine, only Python is required.
+
+```sh
+taskset -c 2 bash investigations/aliasing/time_calls.sh results/short-calls
+python3 investigations/aliasing/summarize_calls.py docs/short-calls
+```
+
+## Architecture
+
+- **passes/** contains the LLVM 21 plugin, its build script, IR fixtures and executable boundary-value oracle.
+- **investigations/aliasing/** contains the two C++ kernels, single-loop IR reproducer, code-generation checks and short-call driver. Both correctness and timing use the same kernel source.
+- **src/** and **tools/** contain the original three workloads and Python standard-library runner. It records compiler metadata, interleaves paired trials, validates outputs and captures assembly, IR and optimization remarks. [Original kernel analysis](docs/compiler-analysis.md)
+- **docs/** contains the investigations and selected evidence. **results/** and **.build/** are ignored local output directories. The repository retains compact evidence needed to audit the findings.
+
+For a functional check of the earlier runner:
+
+```sh
+python3 tools/run.py --compiler clang++-21 --size 37 --rounds 3 --samples 3 --warmups 1
+```
+
+For the earlier release experiment, use the following command on the documented target. The resulting medians are sensitive to host conditions.
+
+```sh
 taskset -c 2 python3 tools/run.py --compiler clang++-20 --candidate clang++-21 --march znver3 --level O3 --samples 10 --output results/reproduction
 python3 tools/compare_asm.py results/reproduction
 ```
 
-Choose a supported explicit CPU target and an available logical CPU on other hardware. Repeat with a fresh output directory. Ten alternating pairs balance which compiler starts first. The report identifies both compiler versions, target triples, C++ runtime link paths, CPU affinity and flags. The assembly comparison extracts the measured function and compares instructions and labels. It discards comments and assembler directives, including alignment.
+## License status
 
-## Optimization-level experiments
-
-A local C++20 experiment comparing Clang optimization levels on three kernels. Start with [the measured findings](docs/compiler-analysis.md). The two captured sessions include raw trial times, correctness results and machine metadata in [session A](docs/session-a.json) and [session B](docs/session-b.json).
-
-## Reproduce on x86-64 Ubuntu or WSL2
-
-Install the distribution packages if needed. Run from the project root.
-
-```sh
-sudo apt update
-sudo apt install --no-install-recommends clang g++ python3 git
-python3 -m unittest discover -s tests -v
-python3 tools/run.py
-python3 tools/run.py --workload dot_product --size 1000000 --rounds 100 --samples 7 --warmups 2
-```
-
-Each invocation writes a new directory under `results/`. Use `--output PATH` to choose an unused directory and `--compiler clang++-21` to select a driver. Each workload gets Intel-syntax assembly, optimized LLVM IR and loop-vectorizer remarks at both levels. For a quick functional check use `--size 37 --rounds 3 --samples 3 --warmups 1`. Temporary binaries and generated evidence trees are excluded from Git. The compact reports under `docs/` are tracked.
-
-## What runs inside the timer
-
-| Workload | Timed work | Correctness check outside timer |
-|---|---|---|
-| Array transform | Mutate one input, then compute a scaled sum for every float | Compare every final element against double-precision arithmetic with a relative-plus-absolute tolerance |
-| Dot product | Multiply bounded unsigned inputs, accumulate in 64 bits | Reverse traversal with widened operands |
-| Branch hash | For input values above the cutoff, update an order-sensitive rolling hash | Reconstruct the polynomial in reverse with successive powers of 33 |
-
-The two integer workloads share a driver. It alternates between two overlapping input slices and checks the aggregate across all rounds using defined unsigned modular arithmetic. A separate translation unit and compilation without LTO keep repeated kernel calls visible to the timer. Deterministic inputs give each executable the same decisions and operands. The branch benchmark tests one roughly balanced input distribution. Other distributions can produce different code performance.
-
-## Reading the report
-
-Each trial launches a fresh process, prepares data and exercises the kernel before timing repeated calls with a monotonic clock. Warm-up trial pairs are discarded. Measured pairs alternate which executable runs first. Seven samples leave one extra first position for O2. The JSON retains order, timings, checksum and maximum errors. Equal checksums across levels supplement the per-executable reference checks.
-
-The reported change is 100 Ãƒâ€” (O3 median / O2 median Ã¢Ë†â€™ 1). MAD measures within-session spread. It is the median distance from the sample median, in milliseconds. It provides no confidence interval. Compare independently repeated sessions before interpreting a difference. The default repeats the same arrays, so cache reuse matters. Input generation, allocation, reference computation and process startup are outside the timer.
-
-Native targeting specializes code for the CPU features exposed by the guest. WSL2 scheduling, migration, host activity, frequency changes and thermal conditions remain uncontrolled. These experiments collect elapsed time only. Branch misses, bandwidth and execution-port bottlenecks would require additional evidence. Keep the host and workload fixed for comparisons.
-
-## Learning path
-
-Follow one dot-product call from the driver to the C++ loop, then locate the source line in the vectorization remarks. Match vector width and interleave count to LLVM vector types, widening operations and the independent accumulators in assembly. Compare the scalar tail with the vector loop. Finally, use the raw trials to recalculate each median and MAD. For a version investigation, hold optimization level, target, input and harness constant and vary only the Clang release.
-
+Project license selection is pending owner approval. The recommended option is Apache-2.0 WITH LLVM-exception to align with upstream LLVM. [LLVM license text](https://llvm.org/LICENSE.txt)
