@@ -1,73 +1,40 @@
-# LLVM Performance Regression Investigator — starter v0.1
+# LLVM Performance Regression Investigator · v0.2
 
-A small, testable starting point for a compiler-engineering portfolio project.
-The **first milestone** compares two Clang optimization configurations. It does
-**not** claim to detect actual LLVM regressions yet.
+A local C++20 experiment comparing Clang optimization levels on three kernels. Start with [the measured findings](docs/compiler-analysis.md). The two captured sessions include raw trial times, correctness results and machine metadata in [session A](docs/session-a.json) and [session B](docs/session-b.json).
 
-## Prerequisites
+## Reproduce on x86-64 Ubuntu or WSL2
 
-On Ubuntu / WSL2:
+Install the distribution packages if needed. Run from the project root.
 
-```bash
+```sh
 sudo apt update
-sudo apt install -y build-essential clang llvm python3 git
-```
-
-## Run the first experiment
-
-From the root directory:
-
-```bash
+sudo apt install --no-install-recommends clang g++ python3 git
+python3 -m unittest discover -s tests -v
 python3 tools/run.py
+python3 tools/run.py --workload dot_product --size 1000000 --rounds 100 --samples 7 --warmups 2
 ```
 
-It compiles `src/array_transform.cpp` with `-O2` and `-O3`, performs 2 warm-up
-and 7 measured trials of each configuration, checks outputs, and creates:
+Each invocation writes a new directory under `results/`. Use `--output PATH` to choose an unused directory and `--compiler clang++-21` to select a driver. Each workload gets Intel-syntax assembly, optimized LLVM IR and loop-vectorizer remarks at both levels. For a quick functional check use `--size 37 --rounds 3 --samples 3 --warmups 1`. Temporary binaries and generated evidence trees are excluded from Git. The compact reports under `docs/` are tracked.
 
-- `results/report.md` and `results/report.json` (timings and metadata)
-- `results/O2.s` and `results/O3.s` (assembly)
-- `results/O2.ll` and `results/O3.ll` (LLVM IR)
-- `results/O2_vectorization.txt` and `results/O3_vectorization.txt` (remarks)
+## What runs inside the timer
 
-The runner requires only Python's standard library and a C++20-capable Clang.
-To smoke-test with small inputs:
+| Workload | Timed work | Correctness check outside timer |
+|---|---|---|
+| Array transform | Mutate one input, then compute a scaled sum for every float | Compare every final element against double-precision arithmetic with a relative-plus-absolute tolerance |
+| Dot product | Multiply bounded unsigned inputs, accumulate in 64 bits | Reverse traversal with widened operands |
+| Branch hash | For input values above the cutoff, update an order-sensitive rolling hash | Reconstruct the polynomial in reverse with successive powers of 33 |
 
-```bash
-python3 tools/run.py --size 10000 --rounds 3 --samples 3 --warmups 1
-```
+The two integer workloads share a driver. It alternates between two overlapping input slices and checks the aggregate across all rounds using defined unsigned modular arithmetic. A separate translation unit and compilation without LTO keep repeated kernel calls visible to the timer. Deterministic inputs give each executable the same decisions and operands. The branch benchmark tests one roughly balanced input distribution. Other distributions can produce different code performance.
 
-Small-input timings are *not* performance evidence. Use defaults or larger workloads
-for useful measurements, and repeat on a quiet laptop plugged into power.
+## Reading the report
 
-## What to investigate
+Each trial launches a fresh process, prepares data and exercises the kernel before timing repeated calls with a monotonic clock. Warm-up trial pairs are discarded. Measured pairs alternate which executable runs first. Seven samples leave one extra first position for O2. The JSON retains order, timings, checksum and maximum errors. Equal checksums across levels supplement the per-executable reference checks.
 
-1. Does Clang emit different instructions at `-O2` and `-O3`?
-2. Does either build use packed vector instructions?
-3. Did output checksums agree across configurations?
-4. Are differences large and repeatable enough to warrant deeper investigation?
-5. What does the vectorization report say? See [LLVM vectorizers](https://llvm.org/docs/Vectorizers.html).
+The reported change is 100 × (O3 median / O2 median − 1). MAD measures within-session spread. It is the median distance from the sample median, in milliseconds. It provides no confidence interval. Compare independently repeated sessions before interpreting a difference. The default repeats the same arrays, so cache reuse matters. Input generation, allocation, reference computation and process startup are outside the timer.
 
-## Roadmap (strictly sequential)
+Native targeting specializes code for the CPU features exposed by the guest. WSL2 scheduling, migration, host activity, frequency changes and thermal conditions remain uncontrolled. These experiments collect elapsed time only. Branch misses, bandwidth and execution-port bottlenecks would require additional evidence. Keep the host and workload fixed for comparisons.
 
-- **v0.1:** First reproducible experiment (this repo).
-- **v0.2:** Add two different real workloads, CPU metadata, robust timing analysis,
-  explicit minimum effect-size thresholds, and automated *correctness* checks.
-- **v0.3:** Compare two actual Clang/LLVM versions on identical inputs;
-  demonstrate a confirmed regression investigation.
-- **v0.4:** Investigate a missed optimization or contribute a minimal fix/upstream test.
+## Learning path
 
-Don't expand into a UI, database, AI agent, or dashboard at this stage.
+Follow one dot-product call from the driver to the C++ loop, then locate the source line in the vectorization remarks. Match vector width and interleave count to LLVM vector types, widening operations and the independent accumulators in assembly. Compare the scalar tail with the vector loop. Finally, use the raw trials to recalculate each median and MAD. For a version investigation, hold optimization level, target, input and harness constant and vary only the Clang release.
 
-## Methodology limitations
-
-- The runner measures only the kernel region, not input initialization.
-- Output values are validated against a separate double-precision calculation.
-- Results vary with thermals, laptop power settings, and the WSL2 scheduler.
-- There is no formal statistical significance test in this first version.
-- Compiler settings are not compiler versions; `-O3` being slower doesn't itself
-  mean that LLVM has regressed.
-
-## Git hygiene
-
-Build outputs are ignored. You may intentionally commit a small, representative
-report for your portfolio; avoid committing all compiled binaries and large IR dumps.

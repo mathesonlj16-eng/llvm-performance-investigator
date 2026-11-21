@@ -1,0 +1,361 @@
+{
+  "timestamp_utc": "2026-11-21T21:14:41.997924+00:00",
+  "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+  "compiler_path": "/usr/bin/clang++",
+  "target": "x86_64-pc-linux-gnu",
+  "cpu": "AMD Ryzen 7 5800HS with Radeon Graphics",
+  "logical_cpus_available": 16,
+  "python": "3.14.4",
+  "platform": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+  "flags": "-std=c++20 -O2/-O3 -march=native -DNDEBUG",
+  "parameters": {
+    "size": 1000000,
+    "rounds": 100,
+    "samples": 7,
+    "warmups": 2
+  },
+  "workloads": {
+    "array_transform": {
+      "checksum": "889210.014135823",
+      "order_including_warmups": [
+        [
+          "O2",
+          "O3"
+        ],
+        [
+          "O3",
+          "O2"
+        ],
+        [
+          "O2",
+          "O3"
+        ],
+        [
+          "O3",
+          "O2"
+        ],
+        [
+          "O2",
+          "O3"
+        ],
+        [
+          "O3",
+          "O2"
+        ],
+        [
+          "O2",
+          "O3"
+        ],
+        [
+          "O3",
+          "O2"
+        ],
+        [
+          "O2",
+          "O3"
+        ]
+      ],
+      "trials": {
+        "O2": [
+          {
+            "elapsed_ms": 17.267964,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 16.727809,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 17.103342,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 17.15034,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 15.248307,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 16.456384,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 18.283843,
+            "max_error": 5.96046447753906e-08
+          }
+        ],
+        "O3": [
+          {
+            "elapsed_ms": 17.566842,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 15.673798,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 17.051965,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 17.022779,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 18.325633,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 17.101208,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 14.826899,
+            "max_error": 5.96046447753906e-08
+          }
+        ]
+      },
+      "statistics": {
+        "O2": {
+          "median_ms": 17.103342,
+          "mad_ms": 0.3755330000000008
+        },
+        "O3": {
+          "median_ms": 17.051965,
+          "mad_ms": 0.514877000000002
+        }
+      },
+      "percent_change_O3_vs_O2": -0.30039158428804
+    },
+    "dot_product": {
+      "checksum": "409474082275700",
+      "order_including_warmups": [
+        [
+          "O2",
+          "O3"
+        ],
+        [
+          "O3",
+          "O2"
+        ],
+        [
+          "O2",
+          "O3"
+        ],
+        [
+          "O3",
+          "O2"
+        ],
+        [
+          "O2",
+          "O3"
+        ],
+        [
+          "O3",
+          "O2"
+        ],
+        [
+          "O2",
+          "O3"
+        ],
+        [
+          "O3",
+          "O2"
+        ],
+        [
+          "O2",
+          "O3"
+        ]
+      ],
+      "trials": {
+        "O2": [
+          {
+            "elapsed_ms": 10.260322,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 10.685692,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 11.096189,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 10.140625,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 16.712408,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 13.340262,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 18.437432,
+            "max_error": 0.0
+          }
+        ],
+        "O3": [
+          {
+            "elapsed_ms": 9.877744,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 10.887632,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 11.357153,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 10.720761,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 10.513185,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 25.201776,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 23.843849,
+            "max_error": 0.0
+          }
+        ]
+      },
+      "statistics": {
+        "O2": {
+          "median_ms": 11.096189,
+          "mad_ms": 0.9555640000000007
+        },
+        "O3": {
+          "median_ms": 10.887632,
+          "mad_ms": 0.4695210000000003
+        }
+      },
+      "percent_change_O3_vs_O2": -1.8795371996637833
+    },
+    "branch_hash": {
+      "checksum": "10054870103564856962",
+      "order_including_warmups": [
+        [
+          "O2",
+          "O3"
+        ],
+        [
+          "O3",
+          "O2"
+        ],
+        [
+          "O2",
+          "O3"
+        ],
+        [
+          "O3",
+          "O2"
+        ],
+        [
+          "O2",
+          "O3"
+        ],
+        [
+          "O3",
+          "O2"
+        ],
+        [
+          "O2",
+          "O3"
+        ],
+        [
+          "O3",
+          "O2"
+        ],
+        [
+          "O2",
+          "O3"
+        ]
+      ],
+      "trials": {
+        "O2": [
+          {
+            "elapsed_ms": 311.509406,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 335.14995,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 327.711853,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 312.502086,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 313.123969,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 320.315801,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 333.709116,
+            "max_error": 0.0
+          }
+        ],
+        "O3": [
+          {
+            "elapsed_ms": 313.616101,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 319.607646,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 338.002381,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 314.258089,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 318.563515,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 323.705247,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 324.874172,
+            "max_error": 0.0
+          }
+        ]
+      },
+      "statistics": {
+        "O2": {
+          "median_ms": 320.315801,
+          "mad_ms": 7.813715000000002
+        },
+        "O3": {
+          "median_ms": 319.607646,
+          "mad_ms": 5.266525999999999
+        }
+      },
+      "percent_change_O3_vs_O2": -0.22108025822928923
+    }
+  }
+}
