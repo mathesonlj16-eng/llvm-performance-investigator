@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
             const double expected = static_cast<double>(a[i]) * 1.25 + static_cast<double>(b[i]);
             const double error = std::abs(static_cast<double>(output[i]) - expected);
             max_error = std::max(max_error, error);
-            if (error > 1e-5 * (1.0 + std::abs(expected))) {
+            if (!std::isfinite(error) || error > 1e-5 * (1.0 + std::abs(expected))) {
                 std::cerr << "Correctness failure at index " << i << "\n";
                 return 1;
             }

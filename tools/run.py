@@ -1,134 +1,145 @@
 #!/usr/bin/env python3
-"""Minimal, reproducible Clang -O2 vs -O3 performance experiment.
-
-No third-party Python packages required. Run from the repository root.
-"""
-from __future__ import annotations
-
+"""Compare two optimization levels on x86-64 Linux with one Clang executable."""
 import argparse
+from datetime import datetime, timezone
+from decimal import Decimal
 import json
+import math
+import os
+from pathlib import Path
 import platform
-import random
 import shutil
 import statistics
 import subprocess
-from datetime import datetime, timezone
-from pathlib import Path
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src" / "array_transform.cpp"
-BUILD = ROOT / ".build"
-RESULTS = ROOT / "results"
+WORKLOADS = ("array_transform", "dot_product", "branch_hash")
+LEVELS = ("O2", "O3")
 
 
-def command(args: list[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(args, cwd=ROOT, text=True, capture_output=True, check=True)
+def command(args):
+    proc = subprocess.run(args, cwd=ROOT, text=True, capture_output=True)
+    if proc.returncode:
+        raise RuntimeError(f"{args} exited {proc.returncode}\n{proc.stderr}")
+    return proc
 
 
-def parse_run(output: str) -> dict[str, float]:
-    parsed = {}
+def parse_run(output):
+    fields = {}
     for line in output.splitlines():
-        if "=" in line:
-            key, value = line.split("=", 1)
-            parsed[key] = float(value)
-    if not {"elapsed_ms", "checksum", "max_error"}.issubset(parsed):
-        raise ValueError(f"Unexpected benchmark output: {output!r}")
-    if not 0 < parsed["elapsed_ms"] < 1e12:
-        raise ValueError(f"Invalid benchmark timing: {parsed!r}")
-    return parsed
+        key, value = line.split("=", 1)
+        if key in fields:
+            raise ValueError(f"Duplicate field {key}")
+        fields[key] = value
+    if fields.keys() != {"elapsed_ms", "checksum", "max_error"}:
+        raise ValueError("Unexpected benchmark fields")
+    timing, error = float(fields["elapsed_ms"]), float(fields["max_error"])
+    checksum = Decimal(fields["checksum"])
+    if not (0 < timing < 1e12 and math.isfinite(error) and error >= 0 and checksum.is_finite()):
+        raise ValueError("Invalid benchmark measurement")
+    return timing, checksum, error
 
 
-def main() -> None:
+def summary(values):
+    median = statistics.median(values)
+    return {"median_ms": median, "mad_ms": statistics.median(abs(x - median) for x in values)}
+
+
+def compile_kernel(compiler, workload, level, build, evidence):
+    source = f"src/{workload}.cpp"
+    flags = [compiler, "-std=c++20", "-" + level, "-march=native", "-DNDEBUG"]
+    stem = evidence / level
+    binary = build / f"{workload}_{level}"
+    sources = [source] if workload == "array_transform" else [source, "src/integer_driver.cpp"]
+    command([*flags, *sources, "-o", binary])
+    asm = command([*flags, "-S", "-masm=intel", "-Rpass=loop-vectorize",
+                   "-Rpass-missed=loop-vectorize", "-Rpass-analysis=loop-vectorize",
+                   source, "-o", stem.with_suffix(".s")])
+    stem.with_suffix(".remarks.txt").write_text(asm.stderr)
+    command([*flags, "-S", "-emit-llvm", source, "-o", stem.with_suffix(".ll")])
+    return binary
+
+
+def measure(args, binaries):
+    observations = {level: [] for level in LEVELS}
+    expected = None
+    order_log = []
+    for index in range(-args.warmups, args.samples):
+        order = LEVELS if index % 2 == 0 else LEVELS[::-1]
+        order_log.append(list(order))
+        for level in order:
+            proc = command([binaries[level], str(args.size), str(args.rounds)])
+            timing, checksum, error = parse_run(proc.stdout)
+            if expected is None:
+                expected = checksum
+            if checksum != expected:
+                raise ValueError("Checksums disagree across runs")
+            if index >= 0:
+                observations[level].append({"elapsed_ms": timing, "max_error": error})
+    stats = {k: summary([x["elapsed_ms"] for x in rows]) for k, rows in observations.items()}
+    delta = 100 * (stats["O3"]["median_ms"] / stats["O2"]["median_ms"] - 1)
+    return dict(checksum=str(expected), order_including_warmups=order_log, trials=observations,
+                statistics=stats, percent_change_O3_vs_O2=delta)
+
+
+def markdown(report):
+    lines = ["# Optimization-level comparison", "", report["compiler"], report["cpu"],
+             report["platform"], "", f"Flags: {report['flags']}", "",
+             f"Parameters: {report['parameters']}", "",
+             "| Workload | O2 median ± MAD (ms) | O3 median ± MAD (ms) | Time change |",
+             "|---|---:|---:|---:|"]
+    for name, data in report["workloads"].items():
+        cells = [f"{s['median_ms']:.3f} ± {s['mad_ms']:.3f}" for s in data["statistics"].values()]
+        lines.append(f"| {name} | {' | '.join(cells)} | {data['percent_change_O3_vs_O2']:+.2f}% |")
+    lines.extend(["", "MAD is median absolute deviation across process trials. "
+                  "Negative change means a shorter O3 median. WSL scheduling and CPU frequency can affect timings."])
+    return "\n".join(lines) + "\n"
+
+
+def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--compiler", default="clang++")
     parser.add_argument("--size", type=int, default=1_000_000)
     parser.add_argument("--rounds", type=int, default=100)
     parser.add_argument("--samples", type=int, default=7)
     parser.add_argument("--warmups", type=int, default=2)
+    parser.add_argument("--workload", choices=WORKLOADS)
+    parser.add_argument("--output", type=Path, help="New directory for this run")
     args = parser.parse_args()
-    if args.size <= 0 or args.rounds <= 0 or args.samples < 3 or args.warmups < 0:
-        parser.error("Size and rounds must be positive; samples >= 3; warmups >= 0")
-    if not shutil.which(args.compiler):
-        parser.error(f"Compiler not found: {args.compiler}")
-
-    BUILD.mkdir(exist_ok=True)
-    RESULTS.mkdir(exist_ok=True)
-    configs = {"O2": ["-O2"], "O3": ["-O3"]}
-    binaries = {}
-    for label, flags in configs.items():
-        binary = BUILD / f"benchmark_{label}"
-        common = [args.compiler, "-std=c++20", *flags, "-march=native", "-DNDEBUG"]
-        print(f"Compiling {label}...")
-        command([*common, str(SOURCE), "-o", str(binary)])
-        binaries[label] = binary
-        asm = command([*common, "-S", "-masm=intel", str(SOURCE), "-o", str(RESULTS / f"{label}.s")])
-        ir = command([*common, "-S", "-emit-llvm", str(SOURCE), "-o", str(RESULTS / f"{label}.ll")])
-        remarks = command([*common, "-S", "-Rpass=loop-vectorize", "-Rpass-missed=loop-vectorize",
-                           str(SOURCE), "-o", "/dev/null"])
-        (RESULTS / f"{label}_vectorization.txt").write_text(remarks.stderr or "No vectorization remarks emitted.\n")
-
-    measurements: dict[str, list[float]] = {name: [] for name in configs}
-    checksums: dict[str, list[float]] = {name: [] for name in configs}
-    rng = random.Random(42)
-    for index in range(args.warmups + args.samples):
-        order = list(configs)
-        rng.shuffle(order)
-        for label in order:
-            run = command([str(binaries[label]), str(args.size), str(args.rounds)])
-            parsed = parse_run(run.stdout)
-            if index >= args.warmups:
-                measurements[label].append(parsed["elapsed_ms"])
-                checksums[label].append(parsed["checksum"])
-        print(f"Trial {index + 1}/{args.warmups + args.samples}: OK")
-
-    all_checksums = [checksum for values in checksums.values() for checksum in values]
-    if max(all_checksums) - min(all_checksums) > 1e-5 * max(1.0, abs(statistics.mean(all_checksums))):
-        raise RuntimeError("Compiler configurations disagree on output checksums")
-
-    medians = {name: statistics.median(values) for name, values in measurements.items()}
-    percent = (medians["O3"] / medians["O2"] - 1.0) * 100.0
-    details = {
-        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-        "platform": platform.platform(),
-        "cpu": command(["uname", "-m"]).stdout.strip(),
-        "compiler": command([args.compiler, "--version"]).stdout.splitlines()[0],
-        "workload": "array_transform",
-        "size": args.size,
-        "rounds": args.rounds,
-        "samples": args.samples,
-        "warmups": args.warmups,
-        "compile_options": "-std=c++20 -march=native -DNDEBUG plus -O2/-O3",
-        "measurements_ms": measurements,
-        "medians_ms": medians,
-        "percent_change_O3_vs_O2": percent,
-        "checksums": checksums,
-    }
-    (RESULTS / "report.json").write_text(json.dumps(details, indent=2) + "\n")
-    report = f"""# Clang optimization comparison (exploratory)
-
-- Compiler: `{details['compiler']}`
-- System: `{details['platform']}` ({details['cpu']})
-- Workload: `{details['workload']}`, size={args.size:,}, rounds={args.rounds}
-- Benchmark repetitions: {args.samples} measured; {args.warmups} warm-up trials
-- Compile options: `{details['compile_options']}`
-
-| Configuration | Median elapsed time | Raw timings (ms) |
-|---|---:|---|
-| `-O2` | {medians['O2']:.3f} ms | {', '.join(f'{t:.3f}' for t in measurements['O2'])} |
-| `-O3` | {medians['O3']:.3f} ms | {', '.join(f'{t:.3f}' for t in measurements['O3'])} |
-
-**Difference:** `-O3` is {abs(percent):.2f}% {'slower' if percent > 0 else 'faster' if percent < 0 else 'different by zero'} than `-O2` by median time.
-
-**Interpretation:** This is an exploratory comparison of optimization settings, not evidence of a compiler regression. Timing differences can be noise. Verify any interesting result with larger workloads, more repeated trials, fixed system settings, and assembly/IR inspection.
-
-Generated evidence: `O2.s`, `O3.s`, `O2.ll`, `O3.ll`, vectorization remark files, and `report.json`.
-
-**Benchmark caveats:** Input initialization and correctness validation are outside the timed region. The loop includes one changing input per round to avoid trivially identical passes. Runs are interleaved in a reproducibly shuffled order. The code runs on the local CPU and may be affected by power management, thermal throttling, or WSL2 scheduling. `-march=native` means machine code is CPU-specific. Do not compare results obtained on different machines as if they are directly interchangeable.
-"""
-    (RESULTS / "report.md").write_text(report)
-    print("\n" + report)
-    print(f"Results written to {RESULTS}")
+    if not (0 < args.size <= 100_000_000 and 0 < args.rounds <= 1_000_000
+            and args.samples >= 3 and args.warmups >= 0):
+        parser.error("Invalid size, rounds, samples or warmups")
+    compiler = shutil.which(args.compiler)
+    if not compiler:
+        parser.error("Compiler missing")
+    version = command([compiler, "--version"]).stdout.splitlines()[0]
+    if "clang" not in version.lower():
+        parser.error("A Clang C++ driver is required")
+    now = datetime.now(timezone.utc)
+    dest = args.output or ROOT / "results" / now.strftime("%Y%m%dT%H%M%S%fZ")
+    dest.mkdir(parents=True, exist_ok=False)
+    cpu = next(line.split(":", 1)[1].strip() for line in Path("/proc/cpuinfo").read_text().splitlines()
+               if line.startswith("model name"))
+    report = dict(timestamp_utc=now.isoformat(), compiler=version, compiler_path=compiler,
+                  target=command([compiler, "-dumpmachine"]).stdout.strip(), cpu=cpu,
+                  logical_cpus_available=len(os.sched_getaffinity(0)), python=platform.python_version(),
+                  platform=platform.platform(), flags="-std=c++20 -O2/-O3 -march=native -DNDEBUG",
+                  parameters={key: getattr(args, key) for key in ("size", "rounds", "samples", "warmups")},
+                  workloads={})
+    build = ROOT / ".build"
+    build.mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=build) as tmp:
+        for workload in ([args.workload] if args.workload else WORKLOADS):
+            evidence = dest / workload
+            evidence.mkdir()
+            binaries = {k: compile_kernel(compiler, workload, k, Path(tmp), evidence) for k in LEVELS}
+            report["workloads"][workload] = measure(args, binaries)
+    (dest / "report.json").write_text(json.dumps(report, indent=2) + "\n")
+    (dest / "report.md").write_text(markdown(report))
+    print(markdown(report), dest)
 
 
 if __name__ == "__main__":
     main()
+
