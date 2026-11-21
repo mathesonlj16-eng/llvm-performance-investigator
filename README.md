@@ -1,4 +1,20 @@
-# LLVM Performance Regression Investigator · v0.2
+# LLVM Performance Regression Investigator - v0.3
+
+Compare two packaged Clang releases at one optimization level on three validated C++20 kernels. Start with the [Clang 20 versus 21 investigation](docs/version-analysis.md).
+
+## Reproduce the release comparison
+
+On x86-64 Ubuntu with the versioned packages available, install the two drivers alongside one another. The recorded experiment ran on a Ryzen 7 5800HS with WSL2 logical CPU 2 available.
+
+```sh
+sudo apt install --no-install-recommends clang-20 clang-21 g++ python3
+taskset -c 2 python3 tools/run.py --compiler clang++-20 --candidate clang++-21 --march znver3 --level O3 --samples 10 --output results/reproduction
+python3 tools/compare_asm.py results/reproduction
+```
+
+Choose a supported explicit CPU target and an available logical CPU on other hardware. Repeat with a fresh output directory. Ten alternating pairs balance which compiler starts first. The report identifies both compiler versions, target triples, C++ runtime link paths, CPU affinity and flags. The assembly comparison extracts the measured function and compares instructions and labels. It discards comments and assembler directives, including alignment.
+
+## Optimization-level experiments
 
 A local C++20 experiment comparing Clang optimization levels on three kernels. Start with [the measured findings](docs/compiler-analysis.md). The two captured sessions include raw trial times, correctness results and machine metadata in [session A](docs/session-a.json) and [session B](docs/session-b.json).
 

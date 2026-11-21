@@ -1,0 +1,489 @@
+{
+  "timestamp_utc": "2026-11-21T21:23:36.944184+00:00",
+  "compiler": "Ubuntu clang version 20.1.8 (2ubuntu8) / Ubuntu clang version 21.1.8 (6ubuntu1)",
+  "compiler_path": "/usr/bin/clang++-20",
+  "configurations": {
+    "baseline": {
+      "path": "/usr/bin/clang++-20",
+      "version": "Ubuntu clang version 20.1.8 (2ubuntu8)",
+      "level": "O3",
+      "triple": "x86_64-pc-linux-gnu",
+      "runtime": "/usr/lib/gcc/x86_64-linux-gnu/15/libstdc++.so"
+    },
+    "candidate": {
+      "path": "/usr/bin/clang++-21",
+      "version": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "level": "O3",
+      "triple": "x86_64-pc-linux-gnu",
+      "runtime": "/usr/lib/gcc/x86_64-linux-gnu/15/libstdc++.so"
+    }
+  },
+  "affinity": [
+    2
+  ],
+  "title": "# Compiler-version comparison",
+  "target": "x86_64-pc-linux-gnu",
+  "cpu": "AMD Ryzen 7 5800HS with Radeon Graphics",
+  "logical_cpus_available": 1,
+  "python": "3.14.4",
+  "platform": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+  "flags": "-std=c++20 -O3 -march=znver3 -DNDEBUG",
+  "parameters": {
+    "size": 1000000,
+    "rounds": 100,
+    "samples": 10,
+    "warmups": 2
+  },
+  "workloads": {
+    "array_transform": {
+      "checksum": "889210.014135823",
+      "order_including_warmups": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ]
+      ],
+      "trials": {
+        "baseline": [
+          {
+            "elapsed_ms": 22.444106,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 28.781639,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 26.080056,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 26.236486,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 29.946371,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 40.626691,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 30.785976,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 26.605628,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 26.950061,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 23.080926,
+            "max_error": 5.96046447753906e-08
+          }
+        ],
+        "candidate": [
+          {
+            "elapsed_ms": 20.965308,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 31.56257,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 31.821121,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 20.627707,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 37.526485,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 46.202353,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 42.944262,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 23.807105,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 46.938215,
+            "max_error": 5.96046447753906e-08
+          },
+          {
+            "elapsed_ms": 24.14738,
+            "max_error": 5.96046447753906e-08
+          }
+        ]
+      },
+      "statistics": {
+        "baseline": {
+          "median_ms": 26.7778445,
+          "mad_ms": 2.5861604999999983
+        },
+        "candidate": {
+          "median_ms": 31.6918455,
+          "mad_ms": 9.305639
+        }
+      },
+      "percent_change_candidate_vs_baseline": 18.350995353640197
+    },
+    "dot_product": {
+      "checksum": "409474082275700",
+      "order_including_warmups": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ]
+      ],
+      "trials": {
+        "baseline": [
+          {
+            "elapsed_ms": 8.999295,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 11.353639,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 10.201565,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 9.081963,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 9.273206,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 9.89177,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 10.236495,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 28.765232,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 13.900671,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 17.23953,
+            "max_error": 0.0
+          }
+        ],
+        "candidate": [
+          {
+            "elapsed_ms": 9.643339,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 10.236614,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 9.416047,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 10.987229,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 9.358517,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 9.17615,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 11.100144,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 17.572792,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 12.945638,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 15.426398,
+            "max_error": 0.0
+          }
+        ]
+      },
+      "statistics": {
+        "baseline": {
+          "median_ms": 10.21903,
+          "mad_ms": 1.1358379999999997
+        },
+        "candidate": {
+          "median_ms": 10.6119215,
+          "mad_ms": 1.2246394999999985
+        }
+      },
+      "percent_change_candidate_vs_baseline": 3.8447044386795914
+    },
+    "branch_hash": {
+      "checksum": "10054870103564856962",
+      "order_including_warmups": [
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ],
+        [
+          "baseline",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "baseline"
+        ]
+      ],
+      "trials": {
+        "baseline": [
+          {
+            "elapsed_ms": 325.490049,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 338.190844,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 321.705128,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 330.439553,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 347.664161,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 348.770373,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 341.520908,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 315.954163,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 323.167158,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 332.017643,
+            "max_error": 0.0
+          }
+        ],
+        "candidate": [
+          {
+            "elapsed_ms": 315.167918,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 318.443176,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 336.57181,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 329.383264,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 348.215578,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 322.166134,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 323.912429,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 317.965782,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 361.490609,
+            "max_error": 0.0
+          },
+          {
+            "elapsed_ms": 346.071869,
+            "max_error": 0.0
+          }
+        ]
+      },
+      "statistics": {
+        "baseline": {
+          "median_ms": 331.22859800000003,
+          "mad_ms": 8.792455000000047
+        },
+        "candidate": {
+          "median_ms": 326.6478465,
+          "mad_ms": 9.303014000000019
+        }
+      },
+      "percent_change_candidate_vs_baseline": -1.3829577299964924
+    }
+  }
+}
