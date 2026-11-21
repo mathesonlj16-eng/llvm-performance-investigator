@@ -1,0 +1,33 @@
+IR-LABEL: define dso_local void @ordinary(
+IR: [[DST:%[0-9]+]] = ptrtoint ptr %0 to i64
+IR: [[SRC:%[0-9]+]] = ptrtoint ptr %1 to i64
+IR: [[DIST:%[0-9]+]] = sub i64 [[DST]], [[SRC]]
+IR: icmp ult i64 [[DIST]], 128
+IR: load <8 x i32>
+IR-LABEL: define dso_local void @restricted(ptr noalias
+IR-SAME: ptr noalias
+IR-NOT: ptrtoint
+IR: load <8 x i32>
+IR-NOT: ptrtoint
+IR: ret void
+
+RECORD: Pass: loop-vectorize
+RECORD: Name: Vectorized
+RECORD: Function: ordinary
+RECORD: VectorizationFactor: '8'
+RECORD: InterleaveCount: '4'
+RECORD: Pass: loop-vectorize
+RECORD: Name: Vectorized
+RECORD: Function: restricted
+RECORD: VectorizationFactor: '8'
+RECORD: InterleaveCount: '4'
+
+ASM-LABEL: ordinary:
+ASM: sub rcx, rsi
+ASM: cmp rcx, 127
+ASM: vpaddd ymm
+ASM: vmovdqu ymmword ptr
+ASM-LABEL: restricted:
+ASM-NOT: sub {{.*}}, rsi
+ASM: vpaddd ymm
+ASM: vmovdqu ymmword ptr

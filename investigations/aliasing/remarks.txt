@@ -1,0 +1,6 @@
+copy_add.cpp:5:5: remark: vectorized loop (vectorization width: 8, interleaved count: 4) [-Rpass=loop-vectorize]
+    5 |     for (std::size_t i = 0; i < n; ++i)
+      |     ^
+copy_add.cpp:11:5: remark: vectorized loop (vectorization width: 8, interleaved count: 4) [-Rpass=loop-vectorize]
+   11 |     for (std::size_t i = 0; i < n; ++i)
+      |     ^
